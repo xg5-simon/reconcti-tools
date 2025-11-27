@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDAP CLI - Getting Started</title>
+    <meta name="description" content="Command-line tool for RDAP (Registration Data Access Protocol) lookups">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #fafafa;
+            --primary-dark: #e5e5e5;
+            --bg-dark: #0a0a0a;
+            --bg-darker: #000000;
+            --bg-darkest: #000000;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --border: #27272a;
+            --sidebar-width: 280px;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--bg-dark);
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-darker);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .header-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95em;
+            transition: color 0.2s;
+        }
+        
+        .header-link:hover {
+            color: var(--text-primary);
+        }
+        
+        .version-badge {
+            background: var(--text-primary);
+            color: var(--bg-darker);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        /* Layout */
+        .layout {
+            display: flex;
+            margin-top: 60px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: var(--sidebar-width);
+            height: calc(100vh - 60px);
+            background: var(--bg-darker);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 24px 0;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+        
+        .sidebar-title {
+            color: var(--text-secondary);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            padding: 0 24px;
+            margin-bottom: 12px;
+        }
+        
+        .sidebar-link {
+            display: block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 24px;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+        }
+        
+        .sidebar-link:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar-link.active {
+            color: var(--text-primary);
+            border-left-color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Main Content */
+        .main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 48px 64px;
+            max-width: 1200px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        
+        h2 {
+            font-size: 1.75em;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        h3 {
+            font-size: 1.25em;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+        
+        .lead {
+            font-size: 1.2em;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+        
+        /* Download Grid */
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 32px 0;
+        }
+        
+        .download-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .download-card:hover {
+            border-color: var(--text-primary);
+            background: #18181b;
+            transform: translateY(-2px);
+        }
+        
+        .download-card .icon {
+            font-size: 3em;
+            margin-bottom: 12px;
+        }
+        
+        .download-card h3 {
+            color: var(--text-primary);
+            margin: 0 0 8px 0;
+            font-size: 1.1em;
+        }
+        
+        .download-card p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 0.9em;
+        }
+        
+        /* Code Blocks */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block code {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #c9d1d9;
+            display: block;
+            white-space: pre;
+            line-height: 1.6;
+        }
+        
+        /* Syntax highlighting */
+        .code-block code .comment { color: #8b949e; font-style: italic; }
+        .code-block code .keyword { color: #ff7b72; }
+        .code-block code .string { color: #a5d6ff; }
+        .code-block code .function { color: #d2a8ff; }
+        .code-block code .operator { color: #ff7b72; }
+        .code-block code .variable { color: #79c0ff; }
+        .code-block code .flag { color: #ffa657; }
+        .code-block code .path { color: #7ee787; }
+        
+        .code-label {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        
+        .feature-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        
+        .feature-card h3 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feature-card p {
+            margin: 0;
+            font-size: 0.95em;
+        }
+        
+        /* Install Tabs */
+        .install-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tab-button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 0.95em;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab-button:hover {
+            color: var(--text-primary);
+        }
+        
+        .tab-button.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--text-primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Callout */
+        .callout {
+            background: #18181b;
+            border-left: 3px solid var(--text-primary);
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+        
+        .callout p {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        /* Links */
+        a {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-decoration-color: var(--text-secondary);
+            transition: text-decoration-color 0.2s;
+        }
+        
+        a:hover {
+            text-decoration-color: var(--text-primary);
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px;
+        }
+        
+        /* Lists */
+        ul {
+            margin-left: 20px;
+            color: var(--text-secondary);
+        }
+        
+        ul li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main {
+                margin-left: 0;
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="/" class="logo">🔍 RDAP CLI</a>
+        <div class="header-right">
+            <span class="version-badge" id="version">Loading...</span>
+            <a href="https://github.com/xg5-simon/reconcti-tools" class="header-link" target="_blank">GitHub</a>
+        </div>
+    </header>
+    
+    <!-- Layout -->
+    <div class="layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Getting Started</div>
+                <a href="#introduction" class="sidebar-link active">Introduction</a>
+                <a href="#installation" class="sidebar-link">Installation</a>
+                <a href="#quick-start" class="sidebar-link">Quick Start</a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Usage</div>
+                <a href="#domain-lookup" class="sidebar-link">Domain Lookup</a>
+                <a href="#ip-lookup" class="sidebar-link">IP Lookup</a>
+                <a href="#asn-lookup" class="sidebar-link">ASN Lookup</a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Resources</div>
+                <a href="https://github.com/xg5-simon/reconcti-tools/releases" class="sidebar-link" target="_blank">Releases</a>
+                <a href="https://github.com/xg5-simon/reconcti-tools" class="sidebar-link" target="_blank">GitHub</a>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main">
+            <h1>Getting Started</h1>
+            <p class="lead">RDAP CLI is a fast, cross-platform command-line tool for querying RDAP (Registration Data Access Protocol) servers.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>🌐 Domain Queries</h3>
+                    <p>Retrieve domain registration information including nameservers, status, and registrar details</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📡 IP Lookups</h3>
+                    <p>Query IP address allocation and registration details from regional internet registries</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔢 ASN Information</h3>
+                    <p>Look up Autonomous System Number registration and routing information</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🚀 Auto-Discovery</h3>
+                    <p>Automatically discovers the appropriate RDAP server using bootstrap registries</p>
+                </div>
+            </div>
+            
+            <h2 id="installation">Installation</h2>
+            <p>Download the latest release for your platform:</p>
+            
+            <div id="downloads-container">
+                <div class="loading">Loading downloads...</div>
+            </div>
+            
+            <div class="callout">
+                <p><strong>Note:</strong> All releases are self-contained executables. No runtime dependencies required.</p>
+            </div>
+            
+            <h3>Platform-Specific Setup</h3>
+            
+            <div class="install-tabs">
+                <button class="tab-button active" onclick="switchTab('windows')">Windows</button>
+                <button class="tab-button" onclick="switchTab('linux')">Linux</button>
+                <button class="tab-button" onclick="switchTab('macos')">macOS</button>
+            </div>
+            
+            <div id="windows-tab" class="tab-content active">
+                <span class="code-label">PowerShell</span>
+                <div class="code-block"><code><span class="comment"># Extract the archive</span>
+<span class="function">Expand-Archive</span> <span class="path">rdap-win-x64.zip</span> <span class="flag">-DestinationPath</span> <span class="path">C:\Tools\rdap</span>
+
+<span class="comment"># Add to PATH (User level)</span>
+<span class="variable">$env:Path</span> <span class="operator">+=</span> <span class="string">";C:\Tools\rdap"</span>
+
+<span class="comment"># Or add permanently</span>
+<span class="function">[Environment]::SetEnvironmentVariable</span>(<span class="string">"Path"</span>, <span class="variable">$env:Path</span> <span class="operator">+</span> <span class="string">";C:\Tools\rdap"</span>, <span class="string">"User"</span>)
+
+<span class="comment"># Verify installation</span>
+<span class="function">rdap</span> <span class="flag">--version</span></code></div>
+            </div>
+            
+            <div id="linux-tab" class="tab-content">
+                <span class="code-label">Bash</span>
+                <div class="code-block"><code><span class="comment"># Extract to /usr/local/bin</span>
+<span class="keyword">sudo</span> <span class="function">tar</span> <span class="flag">-xzf</span> <span class="path">rdap-linux-x64.tar.gz</span> <span class="flag">-C</span> <span class="path">/usr/local/bin/</span>
+
+<span class="comment"># Make executable</span>
+<span class="keyword">sudo</span> <span class="function">chmod</span> <span class="flag">+x</span> <span class="path">/usr/local/bin/rdap</span>
+
+<span class="comment"># Verify installation</span>
+<span class="function">rdap</span> <span class="flag">--version</span></code></div>
+            </div>
+            
+            <div id="macos-tab" class="tab-content">
+                <span class="code-label">Bash/Zsh</span>
+                <div class="code-block"><code><span class="comment"># Extract to /usr/local/bin</span>
+<span class="keyword">sudo</span> <span class="function">tar</span> <span class="flag">-xzf</span> <span class="path">rdap-osx-x64.tar.gz</span> <span class="flag">-C</span> <span class="path">/usr/local/bin/</span>
+
+<span class="comment"># Make executable</span>
+<span class="keyword">sudo</span> <span class="function">chmod</span> <span class="flag">+x</span> <span class="path">/usr/local/bin/rdap</span>
+
+<span class="comment"># On macOS Catalina+, you may need to allow the binary</span>
+<span class="keyword">sudo</span> <span class="function">xattr</span> <span class="flag">-d</span> <span class="string">com.apple.quarantine</span> <span class="path">/usr/local/bin/rdap</span>
+
+<span class="comment"># Verify installation</span>
+<span class="function">rdap</span> <span class="flag">--version</span></code></div>
+            </div>
+            
+            <h2 id="quick-start">Quick Start</h2>
+            <p>Once installed, you can start querying RDAP servers immediately:</p>
+            
+            <h3 id="domain-lookup">Domain Lookup</h3>
+            <span class="code-label">Command</span>
+            <div class="code-block"><code><span class="function">rdap</span> <span class="keyword">domain</span> <span class="string">example.com</span></code></div>
+            
+            <p>Returns registration information including:</p>
+            <ul>
+                <li>Domain status</li>
+                <li>Nameservers</li>
+                <li>Registrar information</li>
+                <li>Registration and expiration dates</li>
+                <li>DNSSEC details</li>
+            </ul>
+            
+            <h3 id="ip-lookup">IP Address Lookup</h3>
+            <span class="code-label">Command</span>
+            <div class="code-block"><code><span class="function">rdap</span> <span class="keyword">ip</span> <span class="string">8.8.8.8</span></code></div>
+            
+            <p>Returns network allocation information including:</p>
+            <ul>
+                <li>IP range and CIDR</li>
+                <li>Network name</li>
+                <li>Organization details</li>
+                <li>Country and region</li>
+            </ul>
+            
+            <h3 id="asn-lookup">ASN Lookup</h3>
+            <span class="code-label">Command</span>
+            <div class="code-block"><code><span class="function">rdap</span> <span class="keyword">asn</span> <span class="string">15169</span></code></div>
+            
+            <p>Returns autonomous system information including:</p>
+            <ul>
+                <li>AS name and description</li>
+                <li>Registration details</li>
+                <li>Organization information</li>
+            </ul>
+            
+            <h2>Advanced Usage</h2>
+            
+            <h3>JSON Output</h3>
+            <p>Get raw JSON output for scripting and automation:</p>
+            <div class="code-block"><code><span class="function">rdap</span> <span class="keyword">domain</span> <span class="string">example.com</span> <span class="flag">--json</span></code></div>
+            
+            <h3>Custom Server</h3>
+            <p>Query a specific RDAP server directly:</p>
+            <div class="code-block"><code><span class="function">rdap</span> <span class="keyword">domain</span> <span class="string">example.com</span> <span class="flag">--server</span> <span class="path">https://rdap.verisign.com/com/v1/</span></code></div>
+            
+            <h3>Verbose Output</h3>
+            <p>Enable detailed logging for debugging:</p>
+            <div class="code-block"><code><span class="function">rdap</span> <span class="keyword">domain</span> <span class="string">example.com</span> <span class="flag">--verbose</span></code></div>
+            
+            <h2>Next Steps</h2>
+            <p>Explore the full documentation and examples on <a href="https://github.com/xg5-simon/reconcti-tools" target="_blank">GitHub</a>.</p>
+        </main>
+    </div>
+    
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            // Remove active class from all buttons and content
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+        
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.sidebar-link[href^="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Update active state
+                    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+        
+        // Fetch latest release
+        fetch('https://api.github.com/repos/xg5-simon/reconcti-tools/releases/latest')
+            .then(response => {
+                if (!response.ok) throw new Error('No releases found');
+                return response.json();
+            })
+            .then(data => {
+                const version = data.tag_name;
+                document.getElementById('version').textContent = version;
+                
+                const downloads = [
+                    { name: 'Windows', platform: 'x64', icon: '🪟', file: 'rdap-win-x64.zip' },
+                    { name: 'Linux', platform: 'x64', icon: '🐧', file: 'rdap-linux-x64.tar.gz' },
+                    { name: 'macOS', platform: 'Intel', icon: '🍎', file: 'rdap-osx-x64.tar.gz' },
+                    { name: 'macOS', platform: 'Apple Silicon', icon: '🍎', file: 'rdap-osx-arm64.tar.gz' }
+                ];
+                
+                const baseUrl = `https://github.com/xg5-simon/reconcti-tools/releases/download/${version}`;
+                
+                const gridHtml = '<div class="download-grid">' + 
+                    downloads.map(d => `
+                        <a href="${baseUrl}/${d.file}" class="download-card">
+                            <div class="icon">${d.icon}</div>
+                            <h3>${d.name}</h3>
+                            <p>${d.platform}</p>
+                        </a>
+                    `).join('') + 
+                    '</div>';
+                
+                document.getElementById('downloads-container').innerHTML = gridHtml;
+            })
+            .catch(error => {
+                console.error('Error fetching release info:', error);
+                document.getElementById('version').textContent = 'Latest';
+                document.getElementById('downloads-container').innerHTML = `
+                    <div class="callout">
+                        <p><a href="https://github.com/xg5-simon/reconcti-tools/releases/latest" target="_blank">View releases on GitHub →</a></p>
+                    </div>
+                `;
+            });
+    </script>
+</body>
+</html>
